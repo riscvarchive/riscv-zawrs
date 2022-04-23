@@ -1,43 +1,51 @@
 [[Introduction]]
 == Introduction
-The Zawrs extension defines a single instruction to be used in polling loops that allows a core 
-to enter a low-power state and wait on either a write to a memory location or other asynchronous
-system events. It addresses common use-cases in operating systems when waiting for contended
-locks or for completion events signaled by external I/O agents, accelerators, and other 
+The Zawrs extension defines a single instruction to be used in polling loops 
+that allows a core to enter a low-power state and wait on either a write to a 
+memory location or other asynchronous system events. It addresses common 
+use-cases in operating systems when waiting for contended locks or for 
+completion events signaled by external I/O agents, accelerators, and other 
 peripherals. An encoding under the SYSTEM opcode is proposed.
 
 === Motivation and use cases
-Waiting for a memory location to be updated is a common pattern in many usages such as:
+Waiting for a memory location to be updated is a common pattern in many usages 
+such as:
 
 . Contenders for a lock waiting for the lock variable to be updated.
 
-. Consumers waiting on the tail of an empty queue for the producer to queue work/data. The 
-  producer may be code executing on a RISC-V hart or an accelerator device.
+. Consumers waiting on the tail of an empty queue for the producer to queue 
+  work/data. The producer may be code executing on a RISC-V hart or an 
+  accelerator device.
 
-. Code waiting on a flag to be set in memory indicative of an event occurring. For example, 
-  software on a RISC-V hart may wait on a “done” flag to be set in memory by an accelerator 
-  device indicating completion of a job previously submitted to the device.
+. Code waiting on a flag to be set in memory indicative of an event occurring. 
+  For example, software on a RISC-V hart may wait on a “done” flag to be set in
+  memory by an accelerator device indicating completion of a job previously 
+  submitted to the device.
 
-Such usages involve polling on memory locations, and such busy loops can be a wasteful 
-expenditure of energy. To mitigate the wasteful looping in such usages, a `WRS` instruction is 
-proposed. Instead of polling for a write at a specific memory location, software would add that 
-memory location to the reservation set using the existing  LR instruction - a subsequent `WRS` 
-instruction would cause the hart to stall until a write occurs to the reservation set. On RV64 
-systems, this proposal allows software to specify (in `rs1` operand) a deadline as a time value 
-in the future when execution would resume in absence of a store to the reservation set.
+Such usages involve polling on memory locations, and such busy loops can be a 
+wasteful expenditure of energy. To mitigate the wasteful looping in such usages,
+a `WRS` instruction is proposed. Instead of polling for a write at a specific 
+memory location, software would add that memory location to the reservation set
+using the existing `LR` instruction - a subsequent `WRS` instruction would 
+cause the hart to stall until a write occurs to the reservation set. On RV64 
+systems, this proposal allows software to specify (in `rs1` operand) a deadline
+as a time value in the future when execution would resume in absence of a store
+to the reservation set.
 
-Such mechanisms have been demonstrated to help achieve increased efficiency both in terms of 
-instruction count as well as cycle count and thereby lead to greater power efficiency compared 
-to a busy-wait loop using yield/pause cite:[osti_1376625], cite:[dpdk_2019] and 
-cite:[usenix_196292]. In such applications, optionally bounding the wait for the event to occur 
-with a timeout is commonly used cite:[sigplan_2001], cite:[Franke2005FussF], cite:[pthread_man],
-and cite:[futex_man].
+Such mechanisms have been demonstrated to help achieve increased efficiency 
+both in terms of instruction count as well as cycle count and thereby lead to 
+greater power efficiency compared to a busy-wait loop using yield/pause 
+cite:[osti_1376625], cite:[dpdk_2019] and cite:[usenix_196292]. In such 
+applications, optionally bounding the wait for the event to occur with a 
+timeout is commonly used cite:[sigplan_2001], cite:[Franke2005FussF], 
+cite:[pthread_man], and cite:[futex_man].
 
 === Suitability for Fast Track Extension Process
-This proposed extension meets the Fast Track criteria: it consists of a single instruction, it 
-addresses the need to be able to efficiently wait on memory updates which is common across the 
-whole gamut of  use cases, it fits in well with other instructions, and is not expected to be 
-contentious. This extension helps RISC-V catch up with established capabilities in other 
-architectures (UMONITOR/UMWAIT - x86-Intel; WFET - ARM, MWAITX- x86-AMD) to address existing 
+This proposed extension meets the Fast Track criteria: it consists of a single 
+instruction, it addresses the need to be able to efficiently wait on memory 
+updates which is common across the whole gamut of  use cases, it fits in well 
+with other instructions, and is not expected to be contentious. This extension 
+helps RISC-V catch up with established capabilities in other architectures 
+(UMONITOR/UMWAIT - x86-Intel; WFET - ARM, MWAITX- x86-AMD) to address existing
 software use cases and is not inventing new use cases.
 
