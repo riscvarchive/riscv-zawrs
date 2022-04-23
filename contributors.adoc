@@ -3,9 +3,4 @@
 This RISC-V specification has been contributed to directly or indirectly by:
 
 [%hardbreaks]
-* Greg Favor
-* Philipp Tomsich
-* Philipp Tomsich
-* Abel Bernabeu
-* David Weaver
-* Tariq Kurd
+Aaron Durbin, Abel Bernabeu, David Weaver, Greg Favor, Ken Dockser, Paul Donahue, Philipp Tomsich, Tariq Kurd, Ved Shanbhogue
