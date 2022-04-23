@@ -1,5 +1,5 @@
 [[header]]
-:description: RISC-V Example Specification Document (Zexmpl)
+:description: RISC-V Wait-on-Reservation-Set (Zawrs) extension
 :company: RISC-V.org
 :revdate: 1/2022
 :revnumber: 1.0
@@ -17,7 +17,7 @@
 // needs to be changed? bug discussion started
 //:WaveDromEditorApp: app/wavedrom-editor.app
 :imagesoutdir: images
-:bibtex-file: example.bib
+:bibtex-file: zawrs.bib
 :bibtex-order: alphabetical
 :bibtex-style: apa
 :icons: font
@@ -36,8 +36,8 @@ endif::[]
 :footnote:
 :xrefstyle: short
 
-= RISC-V Example Specification Document (Zexmpl)
-Author 1; Author 2; RISC-V Task Group
+= RISC-V Wait-on-Reservation-Set (Zawrs) extension
+Ved Shanbhogue
 
 // Preamble
 [WARNING]
@@ -61,7 +61,5 @@ Copyright 2022 by RISC-V International.
 include::contributors.adoc[]
 
 include::intro.adoc[]
-include::chapter2.adoc[]
-//the index must precede the bibliography
-include::index.adoc[]
+include::zawrs.adoc[]
 include::bibliography.adoc[]

@@ -1,15 +1,43 @@
-[[intro]]
+[[Introduction]]
 == Introduction
+The Zawrs extension defines a single instruction to be used in polling loops that allows a core 
+to enter a low-power state and wait on either a write to a memory location or other asynchronous
+system events. It addresses common use-cases in operating systems when waiting for contended
+locks or for completion events signaled by external I/O agents, accelerators, and other 
+peripherals. An encoding under the SYSTEM opcode is proposed.
 
-Lorem ipsum indexterm:[Lorem ipsum] dolor sit amet, consectetur adipiscing elit, sed do *eiusmod tempor* incididunt ut labore et dolore magna aliqua. Felis imperdiet proin fermentum leo vel orci porta. Volutpat lacus laoreet non curabitur indexterm:[curabitur] gravida indexterm:[gravida]. Posuere urna nec tincidunt praesent semper feugiat nibh. Elit ``ullamcorper`` dignissim cras tincidunt lobortis. Malesuada fames ac turpis egestas integer eget. Tristique sollicitudin nibh sit amet commodo. Sed felis eget velit aliquet. Sit amet aliquam id diam maecenas ultricies mi. Consectetur purus ut faucibus pulvinar. Lectus urna duis convallis convallis tellus id. Fermentum iaculis eu non diam. Feugiat in fermentum posuere urna nec tincidunt praesent semper feugiat. Urna nec tincidunt praesent semper feugiat nibh.
+=== Motivation and use cases
+Waiting for a memory location to be updated is a common pattern in many usages such as:
 
-Commodo viverra maecenas accumsan lacus. Vulputate odio ut enim blandit indexterm:[blandit] volutpat maecenas volutpat blandit. Urna porttitor rhoncus dolor purus non. Tellus mauris a diam maecenas sed. Vitae auctor eu augue ut lectus. Ridiculus mus mauris vitae ultricies leo integer. Consequat semper viverra nam *libero* justo laoreet sit amet. Pellentesque pulvinar pellentesque habitant morbi tristique senectus et netus et. Ac placerat vestibulum lectus mauris ``ultrices`` eros in cursus turpis. Accumsan in nisl nisi scelerisque eu ultrices vitae. Cras ornare arcu dui vivamus. Vitae congue mauris rhoncus aenean. Consequat mauris nunc congue nisi vitae suscipit tellus. Tempus egestas sed sed risus pretium quam vulputate dignissim. Quis varius quam quisque id diam vel. Mattis nunc sed blandit libero volutpat sed cras ornare arcu. Amet mauris commodo quis imperdiet massa tincidunt nunc.
+. Contenders for a lock waiting for the lock variable to be updated.
 
-[NOTE]
-====
-The name RISC-V indexterm:[RISC-V] was chosen to represent the fifth major RISC ISA design from UC Berkeley (RISC-I cite:[riscI-isca1981], RISC-II cite:[Katevenis:1983], SOAR cite:[Ungar:1984], and SPUR cite:[spur-jsscc1989] were the first four). We also pun on the use of the Roman numeral "V" to signify "variations" and "vectors", as support for a range of architecture research, including various data-parallel accelerators, is an explicit goal of the ISA design.
-====
+. Consumers waiting on the tail of an empty queue for the producer to queue work/data. The 
+  producer may be code executing on a RISC-V hart or an accelerator device.
 
-=== Sub Section of Introduction
+. Code waiting on a flag to be set in memory indicative of an event occurring. For example, 
+  software on a RISC-V hart may wait on a “done” flag to be set in memory by an accelerator 
+  device indicating completion of a job previously submitted to the device.
 
-Pellentesque habitant morbi *tristique* senectus et netus et. Aliquam purus sit amet luctus. Odio eu ``feugiat`` pretium nibh ipsum consequat nisl vel. Euismod lacinia at quis risus sed vulputate odio ut. Eu sem integer vitae justo eget. Cursus euismod quis viverra nibh. Tempus egestas sed sed risus. Quis imperdiet massa tincidunt nunc pulvinar. Id venenatis a condimentum vitae sapien pellentesque habitant.
+Such usages involve polling on memory locations, and such busy loops can be a wasteful 
+expenditure of energy. To mitigate the wasteful looping in such usages, a `WRS` instruction is 
+proposed. Instead of polling for a write at a specific memory location, software would add that 
+memory location to the reservation set using the existing  LR instruction - a subsequent `WRS` 
+instruction would cause the hart to stall until a write occurs to the reservation set. On RV64 
+systems, this proposal allows software to specify (in `rs1` operand) a deadline as a time value 
+in the future when execution would resume in absence of a store to the reservation set.
+
+Such mechanisms have been demonstrated to help achieve increased efficiency both in terms of 
+instruction count as well as cycle count and thereby lead to greater power efficiency compared 
+to a busy-wait loop using yield/pause cite:[osti_1376625], cite:[dpdk_2019] and 
+cite:[usenix_196292]. In such applications, optionally bounding the wait for the event to occur 
+with a timeout is commonly used cite:[sigplan_2001], cite:[Franke2005FussF], cite:[pthread_man],
+and cite:[futex_man].
+
+=== Suitability for Fast Track Extension Process
+This proposed extension meets the Fast Track criteria: it consists of a single instruction, it 
+addresses the need to be able to efficiently wait on memory updates which is common across the 
+whole gamut of  use cases, it fits in well with other instructions, and is not expected to be 
+contentious. This extension helps RISC-V catch up with established capabilities in other 
+architectures (UMONITOR/UMWAIT - x86-Intel; WFET - ARM, MWAITX- x86-AMD) to address existing 
+software use cases and is not inventing new use cases.
+

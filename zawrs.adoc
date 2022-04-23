@@ -1,0 +1,100 @@
+[[Zawrs]]
+== Zawrs proposed specification
+
+The proposed `WRS` instruction is available in all privilege modes and is proposed to use the 
+`SYSTEM` major opcode. On RV64 systems, if `rs1` is not `x0` then `rs1` holds a 64-bit deadline,
+compared against the `time` CSR when `V=0` and against the sum of the `time` and `htimedelta` 
+CSRs when `V=1` (similar to `stimecmp` and `vstimecmp` respectively), for the wait. On RV32 
+systems, a deadline cannot be specified as the `rs1` is limited to 32-bit.
+
+[wavedrom, , ]
+....
+{reg: [
+  {bits: 7, name: 'opcode', attr: ['SYSTEM'] },
+  {bits: 5, name: 'rd', attr: ['0'] },
+  {bits: 3,  name: 'func3', attr: ['0'] },
+  {bits: 5,  name: 'rs1', attr: ['src'] },
+  {bits: 12,  name: 'func12', attr:['WRS(0x010)'] },
+], config:{lanes: 1, hspace:1024}}
+....
+The proposed encoding of `funct12` is `0x010`. In RV32, the `rs1` field must be 0.
+
+*Operation:*
+[source,asciidoc, linenums]
+....
+1.   if reservation-set is valid
+2.       if inst.rs1_field != 0
+3.           Time compare armed with the value in rs1
+4.       Stall hart execution until:
+           a) reservation set is invalid 
+           b) inst.rs1_field != 0 and rs1 < time CSR 
+           c) interrupt observed 
+5.   Disable time comparison if enabled at step 3.
+6.   Invalidate reservation-set
+....
+When the instruction is invoked, the hart stalls until one of following events occur:
+
+. The reservation set is invalid
+. The time deadline (if specified) is reached, i.e. `rs1`  is less than the value in `time` CSR.
+. An interrupt was observed - even if disabled
+
+While stalled, an implementation is permitted to remove the stall and complete execution 
+occasionally for any reason. `WRS` is allowed to complete in a bounded amount of time from when 
+the condition to remove the stall occurs.  `WRS` is not supported in a constrained `LR`/`SC` 
+loop.  When `WRS` completes, the reservation set of the hart is no longer valid. 
+
+[NOTE]
+====
+Architecture Comment: Specifying the maximum wait as an absolute time deadline as compared to a 
+relative timeout delay simplifies the programmer usage model. If the application gets 
+interrupted during the wait, the WRS may be re-executed with the previously specified deadline 
+without the risk of sleeping too long - if the deadline has already passed, the `WRS` will 
+release its stall.
+
+Architecture Comment: The deadline, if specified, may be used by the hart as a hint to determine
+if a lower power state may be achieved during the wait. Entering a power-saving state may affect
+how fast the stalled hart may resume execution when an event occurs.
+
+Architecture Comment: `WRS` is not defined as a hint but as having a defined behavior. 
+Implementing as a hint that can be ignored (i.e., executed as the underlying nop) may lead to 
+degradation in the system and/or application performance.  `WRS` is not suitable as a hint NOP 
+due to a) long wait times being possible b) `WRS` is coupled with a `LR` and if `WRS` were to be 
+implemented as a NOP then a valid hanging reservation would be left around c) `WRS` explicitly 
+makes the reservation set invalid and this behavior would not occur if the instruction were 
+implemented as a NOP.  Combining `WRS`, `PAUSE`, optional timeout, and HINT  functionality 
+all into one jack-of-all-trades instruction, for differing software use cases, that may or may 
+not perform different actions based on different combinations of input operands, is generally 
+not encouraged within RISC-V.
+
+Recommendation: An implementation should try to bound the latency to remove the stall to latency
+incurred on access to an on-chip cache furthest from the hart or in case of a cache-less system 
+the access to main memory from the hart
+====
+
+`WRS` instruction follows rules of the existing `WFI` instruction for resuming execution on a 
+pending  interrupt.
+
+When not executing in M-mode, if the existing `TM` bit in `mcounteren` register is clear 
+(disabling timer access), `WRS` with `rs1` not `x0` will cause an illegal instruction exception. 
+
+When the existing `TW` (Timeout Wait) bit in `mstatus` is set and `WRS` is executed in S or U  
+mode, and it does not complete within an implementation-specific bounded time limit, the `WRS` 
+instruction will cause an illegal instruction exception.
+
+When executing in VS or VU mode, if the existing `TM` bit in the `hcounteren` register is clear 
+and the `TM` bit in the `mcounteren` register is set, the `WRS` with `rs1` not `x0` will cause a
+virtual instruction exception.
+
+When executing in VS or VU mode, if the existing `VTW` bit is set in `hstatus`, the `mstatus` 
+`TW` bit is clear, and the `WRS` does not complete within an implementation-specific bounded 
+time limit, the `WRS` instruction will cause a virtual instruction exception.
+
+When `WRS` completes, reservations held by the executing hart are invalidated. It is otherwise 
+legal for an implementation to simply execute `WRS` without stalling.
+
+[NOTE]
+====
+Architecture Comment: Since the `WRS` instruction can complete execution for reasons other than 
+writes to the reservation set, software will likely need a means of looping until the required 
+writes have occured.
+====
