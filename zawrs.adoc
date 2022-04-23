@@ -24,18 +24,18 @@ an illegal instruction exception occurs.
 *Operation:*
 [source,asciidoc, linenums]
 ....
-. if reservation-set is valid
-.     Stall hart execution until one of following events occur:
-..        reservation set is invalid 
-..        inst.rs1_field != 0 and rs1 < time CSR 
-..        interrupt observed 
-. Invalidate reservation-set
+1. if reservation-set is valid
+2.   Stall hart execution until one of following events occur:
+       a) reservation set is invalid 
+       b) rs1 != 0 and X(rs1) < time CSR 
+       c) interrupt observed 
+3. Invalidate reservation-set
 ....
 When the instruction is invoked, the hart stalls until one of following 
 events occur:
 
 . The reservation set is invalid
-. The time deadline (if specified) is reached, i.e. `rs1`  is less than the 
+. The time deadline (if specified) is reached, i.e. `X(rs1)`  is less than the 
   value in `time` CSR.
 . An interrupt was observed - even if disabled
 
