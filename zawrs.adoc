@@ -8,6 +8,13 @@ sum of the `time` and `htimedelta` CSRs when `V=1` (similar to `stimecmp` and
 `vstimecmp` respectively), for the wait. On RV32 systems, a deadline cannot be 
 specified as the `rs1` is limited to 32-bit.
 
+*Mnemonic:*
+wrs _rs1_
+
+*Pseudoinstructions:*
+wrs &#8594; wrs zero
+
+*Encoding:*
 [wavedrom, , ]
 ....
 {reg: [
