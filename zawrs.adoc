@@ -11,15 +11,18 @@ specified as the `rs1` is limited to 32-bit.
 [wavedrom, , ]
 ....
 {reg: [
-  {bits: 7, name: 'opcode', attr: ['SYSTEM'] },
+  {bits: 7, name: 'opcode', attr: ['SYSTEM(0x73)'] },
   {bits: 5, name: 'rd', attr: ['0'] },
   {bits: 3,  name: 'func3', attr: ['0'] },
   {bits: 5,  name: 'rs1', attr: ['src'] },
   {bits: 12,  name: 'func12', attr:['WRS(0x010)'] },
 ], config:{lanes: 1, hspace:1024}}
 ....
-The encoding of `funct12` is `0x010`. In RV32, the `rs1` field must be 0 else 
-an illegal instruction exception occurs.
+The value of the field `opcode` is `0x73`, the value of the field `func3` is `0x0`,
+and the value of the fields `funct12` and `rd` is `0x010`.
+The field `rs1` encodes the register that holds the 64-bit deadline, or `0x0`
+(encoding for `x0`) if no timeout is specified.
+In RV32, the `rs1` field must be `0x0` else an illegal instruction exception occurs.
 
 *Operation:*
 [source,asciidoc, linenums]
