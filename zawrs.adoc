@@ -12,7 +12,7 @@ specified as the `rs1` is limited to 32-bit.
 wrs _rs1_
 
 *Pseudoinstructions:*
-wrs &#8594; wrs zero
+wrs -> wrs zero
 
 *Encoding:*
 [wavedrom, , ]
