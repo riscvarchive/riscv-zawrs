@@ -25,8 +25,8 @@ wrs -> wrs zero
   {bits: 12,  name: 'func12', attr:['WRS(0x010)'] },
 ], config:{lanes: 1, hspace:1024}}
 ....
-The value of the field `opcode` is `0x73`, the value of the field `func3` is `0x0`,
-and the value of the fields `funct12` and `rd` is `0x010`.
+The value of the field `opcode` is `0x73`, the value of the fields `func3`
+and `rd` is `0x0`, and the value of the field `funct12` is `0x010`.
 The field `rs1` encodes the register that holds the 64-bit deadline, or `0x0`
 (encoding for `x0`) if no timeout is specified.
 In RV32, the `rs1` field must be `0x0` else an illegal instruction exception occurs.
