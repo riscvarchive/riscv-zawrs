@@ -1,14 +1,15 @@
 [[Zawrs]]
 == Zawrs
 
-The `WRS.NTO` and `WRS.STO` instructions are available in all privilege modes 
-and use the `SYSTEM` major opcode. When these instructions are invoked, the 
-hart stalls until one of following events occur:
+The `WRS.NTO` and `WRS.STO` instructions cause the hart to temporarily stall
+execution in a low-power state until one of the following events occur:
 
 . The reservation set is invalid
 . If `WRS.STO`, an implementation defined short time has passed since the 
-  hart was stalled.
+  hart stalled execution.
 . An interrupt was observed - even if disabled
+
+These instructions are available in all privilege modes.
 
 *Encoding:*
 [wavedrom, , ]
@@ -25,47 +26,51 @@ hart stalls until one of following events occur:
 *Operation:*
 [source,asciidoc, linenums]
 ....
-if reservation-set is valid
-   Stall hart execution until one of following events occur:
-      a) reservation set is invalid 
-      b) if WRS.STO, a short time since start of stall has elapsed
-      c) interrupt observed 
+if reservation set is valid
+   Stall hart execution until one of the following events occur:
+      a) The reservation set is invalid 
+      b) If WRS.STO, a short time since start of stall has elapsed
+      c) An interrupt is observed 
 ....
 
-While stalled, an implementation is permitted to remove the stall and complete 
-execution occasionally for any reason. `WRS.NTO` and `WRS.STO` are allowed to 
-complete in a bounded amount of time from when the condition to remove the 
-stall occurs. These instructions are not supported in a constrained `LR`/`SC` loop.
+While stalled, an implementation is permitted to occasionally terminate the 
+stall and complete execution for any reason. 
+
+These instructions are not supported in a constrained `LR`/`SC` loop.
 
 [NOTE]
 ====
-Architecture Comment: `WRS.STO` and `WRS.NTO` are not defined as a hint but 
-as having a defined behavior.  Implementing as a hint that can be ignored 
-(i.e., executed as the underlying nop) may lead to degradation in the system
-and/or application performance.
+Architecture Comment: `WRS.STO` and `WRS.NTO` are not defined as hints but 
+as having defined behaviors.  Implementing as a hint that can be ignored 
+(i.e., executed as a nop) may lead to degradation in the system and/or 
+application performance.
 
-Architecture Comment: Since the `WRS.STO` and `WRS.NTO` instructions can complete 
-execution for reasons other than writes to the reservation set, software will 
-likely need a means of looping until the required writes have occurred.
+Architecture Comment: Since the `WRS.STO` and `WRS.NTO` instructions can 
+complete execution for reasons other than stores to the reservation set,
+software will likely need a means of looping until the required stores 
+have occurred.
 
-Recommendation: An implementation should try to bound the short timeout to
-be long enough to allow meaningful power reduction but short enough to avoid 
-a program using the timeout to meet a deadline from missing it significantly. 
-Bounding the short timeout to not more than 10 microseconds is recommended.
+Recommendation: The duration of a WRS.STO instruction's timeout may vary
+significantly within and among implementations. In a typical implementation
+this duration should be long enough to allow meaningful power reduction but
+short enough to avoid a program using the timeout to meet a deadline from
+missing it significantly. A duration less than or equal to 10 microseconds
+is recommended.
 
-Recommendation: An implementation should try to bound the latency to remove the
-stall to latency incurred on access to an on-chip cache furthest from the hart 
-or in case of a cache-less system the access to main memory from the hart
+Recommendation: An implementation should try to bound the latency to terminate
+the stall, from when the conditions to terminate the stall have been observed,
+to the latency incurred on access to an on-chip cache furthest from the hart 
+or in case of a cache-less system the access to main memory from the hart.
 ====
-`WRS.NTO` and `WRS.STO` instructions follows rules of the existing `WFI` 
-instruction for resuming execution on a pending  interrupt.
+`WRS.NTO` and `WRS.STO` instructions follow the rules of the `WFI` instruction
+for resuming execution on a pending  interrupt.
 
-When the existing `TW` (Timeout Wait) bit in `mstatus` is set and `WRS.NTO` is 
-executed in S or U  mode, and it does not complete within an 
+When the `TW` (Timeout Wait) bit in `mstatus` is set and `WRS.NTO` is executed
+in S or U  mode, and it does not complete within an implementation-specific 
+bounded time limit, the `WRS.NTO` instruction will cause an illegal instruction
+exception.
+
+When executing in VS or VU mode, if the `VTW` bit is set in `hstatus`, the 
+`mstatus` `TW` bit is clear, and the `WRS.NTO` does not complete within an 
 implementation-specific bounded time limit, the `WRS.NTO` instruction will cause
-an illegal instruction exception.
-
-When executing in VS or VU mode, if the existing `VTW` bit is set in `hstatus`,
-the `mstatus` `TW` bit is clear, and the `WRS.NTO` does not complete within an
-implementation-specific bounded time limit, the `WRS.NTO` instruction will 
-cause a virtual instruction exception.
+a virtual instruction exception.

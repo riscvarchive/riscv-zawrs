@@ -57,9 +57,15 @@ https://creativecommons.org/licenses/by/4.0/.
 
 Copyright 2022 by RISC-V International.
 
-[preface]
-include::contributors.adoc[]
+=== Contributors
+
+This RISC-V specification has been contributed to directly or indirectly by:
+
+//[%hardbreaks]
+Aaron Durbin, Abel Bernabeu, David Weaver, Greg Favor, Ken Dockser, Paul Donahue, Philipp Tomsich, Tariq Kurd, Ved Shanbhogue
+//[preface]
+//include::contributors.adoc[]
 
 include::intro.adoc[]
 include::zawrs.adoc[]
-include::bibliography.adoc[]
+//include::bibliography.adoc[]
