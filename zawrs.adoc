@@ -2,14 +2,11 @@
 == Zawrs
 
 The `WRS.NTO` and `WRS.STO` instructions cause the hart to temporarily stall
-execution in a low-power state until one of the following events occur:
-
-. The reservation set is invalid
-. If `WRS.STO`, an implementation defined short time has passed since the 
-  hart stalled execution.
-. An interrupt was observed - even if disabled
-
-These instructions are available in all privilege modes.
+execution in a low-power state till the reservation set is valid or an 
+interrupt, even if disabled, is observed. For `WRS.STO` the stall duration
+is bounded by an implementation defined short timeout. These instructions 
+are available in all privilege modes. These instructions are not supported 
+in a constrained `LR`/`SC` loop.
 
 *Encoding:*
 [wavedrom, , ]
@@ -30,13 +27,24 @@ if reservation set is valid
    Stall hart execution until one of the following events occur:
       a) The reservation set is invalid 
       b) If WRS.STO, a short time since start of stall has elapsed
-      c) An interrupt is observed 
+      c) An interrupt is observed - even if disabled
 ....
 
 While stalled, an implementation is permitted to occasionally terminate the 
 stall and complete execution for any reason. 
 
-These instructions are not supported in a constrained `LR`/`SC` loop.
+`WRS.NTO` and `WRS.STO` instructions follow the rules of the `WFI` instruction
+for resuming execution on a pending  interrupt.
+
+When the `TW` (Timeout Wait) bit in `mstatus` is set and `WRS.NTO` is executed
+in S or U  mode, and it does not complete within an implementation-specific 
+bounded time limit, the `WRS.NTO` instruction will cause an illegal instruction
+exception.
+
+When executing in VS or VU mode, if the `VTW` bit is set in `hstatus`, the 
+`mstatus` `TW` bit is clear, and the `WRS.NTO` does not complete within an 
+implementation-specific bounded time limit, the `WRS.NTO` instruction will cause
+a virtual instruction exception.
 
 [NOTE]
 ====
@@ -50,27 +58,10 @@ complete execution for reasons other than stores to the reservation set,
 software will likely need a means of looping until the required stores 
 have occurred.
 
-Recommendation: The duration of a WRS.STO instruction's timeout may vary
+Recommendation: The duration of a `WRS.STO` instruction's timeout may vary
 significantly within and among implementations. In a typical implementation
 this duration should be long enough to allow meaningful power reduction but
 short enough to avoid a program using the timeout to meet a deadline from
 missing it significantly. A duration less than or equal to 10 microseconds
 is recommended.
-
-Recommendation: An implementation should try to bound the latency to terminate
-the stall, from when the conditions to terminate the stall have been observed,
-to the latency incurred on access to an on-chip cache furthest from the hart 
-or in case of a cache-less system the access to main memory from the hart.
 ====
-`WRS.NTO` and `WRS.STO` instructions follow the rules of the `WFI` instruction
-for resuming execution on a pending  interrupt.
-
-When the `TW` (Timeout Wait) bit in `mstatus` is set and `WRS.NTO` is executed
-in S or U  mode, and it does not complete within an implementation-specific 
-bounded time limit, the `WRS.NTO` instruction will cause an illegal instruction
-exception.
-
-When executing in VS or VU mode, if the `VTW` bit is set in `hstatus`, the 
-`mstatus` `TW` bit is clear, and the `WRS.NTO` does not complete within an 
-implementation-specific bounded time limit, the `WRS.NTO` instruction will cause
-a virtual instruction exception.
