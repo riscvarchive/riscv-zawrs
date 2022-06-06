@@ -23,7 +23,7 @@ in a constrained `LR`/`SC` loop.
 *Operation:*
 [source,asciidoc, linenums]
 ....
-if reservation set is valid
+If the reservation set is valid
    Stall hart execution until one of the following events occur:
       a) The reservation set is invalid 
       b) If WRS.STO, a short time since start of stall has elapsed
