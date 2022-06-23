@@ -23,11 +23,10 @@ in a constrained `LR`/`SC` loop.
 *Operation:*
 [source,asciidoc, linenums]
 ....
-If the reservation set is valid
-   Stall hart execution until one of the following events occur:
-      a) The reservation set is invalid 
-      b) If WRS.STO, a short time since start of stall has elapsed
-      c) An interrupt is observed - even if disabled
+Hart execution may be stalled while the following are all satisfied:
+    a) The reservation set is valid 
+    b) If WRS.STO, a "short" duration since start of stall has not elapsed
+    c) No pending interrupt is observed (see the rules below)
 ....
 
 While stalled, an implementation is permitted to occasionally terminate the 
@@ -48,20 +47,15 @@ a virtual instruction exception.
 
 [NOTE]
 ====
-Architecture Comment: `WRS.STO` and `WRS.NTO` are not defined as hints but 
-as having defined behaviors.  Implementing as a hint that can be ignored 
-(i.e., executed as a nop) may lead to degradation in the system and/or 
-application performance.
+Since the `WRS.STO` and `WRS.NTO` instructions can complete execution for 
+reasons other than stores to the reservation set, software will likely need 
+a means of looping until the required stores have occurred.
 
-Architecture Comment: Since the `WRS.STO` and `WRS.NTO` instructions can 
-complete execution for reasons other than stores to the reservation set,
-software will likely need a means of looping until the required stores 
-have occurred.
-
-Recommendation: The duration of a `WRS.STO` instruction's timeout may vary
-significantly within and among implementations. In a typical implementation
-this duration should be long enough to allow meaningful power reduction but
-short enough to avoid a program using the timeout to meet a deadline from
-missing it significantly. A duration less than or equal to 10 microseconds
-is recommended.
+The duration of a `WRS.STO` instruction's timeout may vary significantly within 
+and among implementations. In a typical implementation this duration should be 
+long enough to allow meaningful power reduction but short enough to avoid a 
+program using the timeout to meet a deadline from missing it significantly. 
+In typical implementations this duration should be roughly in the range of 
+10 to 100 times an on-chip cache miss latency or a cacheless access to main 
+memory.
 ====
