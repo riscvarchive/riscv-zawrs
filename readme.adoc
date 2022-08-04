@@ -1,17 +1,6 @@
 = RISC-V Wait-on-Reservation-Set (Zawrs) extension
 
-The Zawrs extension defines a pair of instructions to be used in polling loops that allows a core to enter a low-power state and wait on a store to a memory location. Waiting for a memory location to be updated is a common pattern in many use cases such as:
-
-Contenders for a lock waiting for the lock variable to be updated.
-
-Consumers waiting on the tail of an empty queue for the producer to queue work/data. The producer may be code executing on a RISC-V hart, an accelerator device, an external I/O agent.
-
-Code waiting on a flag to be set in memory indicative of an event occurring. For example, software on a RISC-V hart may wait on a "done" flag to be set in memory by an accelerator device indicating completion of a job previously submitted to the device.
-
-Such use cases involve polling on memory locations, and such busy loops can be a wasteful expenditure of energy. To mitigate the wasteful looping in such usages, a WRS.NTO (WRS-with-no-timeout) instruction is provided. Instead of polling for a store to a specific memory location, software registers a reservation set that includes all the bytes of the memory location using the LR instruction. Then a subsequent WRS.NTO instruction would cause the hart to temporarily stall execution in a low-power state until a store occurs to the reservation set.
-
-Sometimes the program waiting on a memory update may also need to carry out a task at a future time or otherwise place an upper bound on the wait. To support such use cases a second instruction WRS.STO (WRS-with-short-timeout) is provided that works like WRS.NTO but bounds the stall duration to an implementation-define short timeout such that the stall is terminated on the timeout if no other conditions have to occurred to terminate the stall. The program using this instruction may then determine if its deadline has been reached.
-
+The Zawrs extension defines a pair of instructions to be used in polling loops that allows a core to enter a low-power state and wait on a store to a memory location. Waiting for a memory location to be updated is a common pattern in many use cases.
 
 = License
 
