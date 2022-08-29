@@ -32,3 +32,5 @@ implementation-define short timeout such that the stall is terminated on the
 timeout if no other conditions have to occurred to terminate the stall. The 
 program using this instruction may then determine if its deadline has been 
 reached.
+
+This extension depends on the Zalrsc extension.
