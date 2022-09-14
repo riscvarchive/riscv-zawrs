@@ -17,9 +17,9 @@
 // needs to be changed? bug discussion started
 //:WaveDromEditorApp: app/wavedrom-editor.app
 :imagesoutdir: images
-:bibtex-file: zawrs.bib
-:bibtex-order: alphabetical
-:bibtex-style: apa
+//:bibtex-file: zawrs.bib
+//:bibtex-order: alphabetical
+//:bibtex-style: apa
 :icons: font
 :lang: en
 :listing-caption: Listing
@@ -98,6 +98,11 @@ timeout if no other conditions have to occurred to terminate the stall. The
 program using this instruction may then determine if its deadline has been 
 reached.
 
-This extension depends on the Zalrsc extension.
+[NOTE]
+====
+The instructions in the Zawrs extension are only useful in conjunction with the
+LR instructions, which are provided by the A extension, and which we also expect
+to be provided by a narrower Zalrsc extension in the future.
+====
 
 include::zawrs.adoc[]
