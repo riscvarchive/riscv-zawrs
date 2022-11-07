@@ -61,5 +61,5 @@ exception if executed in U-mode when the governing `TW` bit is 0. `WFI` is
 typically not expected to be used in U-mode and on many systems may promptly
 cause an illegal instruction exception if used at U-mode. Unlike `WFI`,
 `WRS.NTO` is expected to be used by software in U-mode when waiting on
-memory but without itself having a deadline for that wait to complete.
+memory but without a deadline for that wait to complete.
 ====
