@@ -1,12 +1,12 @@
 bison
 build-essential
+python3-pip
 cmake
 curl
 flex
 fonts-lyx
 git
 graphviz
-# For wavedrom
 default-jre
 libcairo2-dev
 libffi-dev
@@ -17,3 +17,14 @@ make
 pkg-config
 ruby
 ruby-dev
+libgif-dev
+libwebp-dev
+libzstd-dev
+ruby-full
+gem
+npm
+texlive-latex-base
+texlive-fonts-recommended
+texlive-fonts-extra
+texlive-latex-extra
+texlive-science
