@@ -1,8 +1,8 @@
 [[header]]
 :description: RISC-V Wait-on-Reservation-Set (Zawrs) extension
 :company: RISC-V.org
-:revdate: 11/2022
-:revnumber: 1.0
+:revdate: 3/2023
+:revnumber: 1.01
 :revremark: This document Ratified. See http://riscv.org/spec-state for details.
 :url-riscv: http://riscv.org
 :doctype: book
